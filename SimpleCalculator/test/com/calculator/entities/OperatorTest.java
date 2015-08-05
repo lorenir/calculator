@@ -5,6 +5,9 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.principal.calculator.client.entities.Operator;
+import com.principal.calculator.client.entities.Symbol;
+
 public class OperatorTest {
 	private Operator opTest;
 

@@ -1,21 +1,15 @@
-package com.calculator.controllers;
+package com.principal.calculator.client.controllers;
 
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
-
-import com.calculator.entities.Operation;
-import com.calculator.entities.Operator;
-import com.calculator.entities.States;
-import com.calculator.entities.Symbol;
-import com.sun.org.apache.xpath.internal.operations.Minus;
+import com.principal.calculator.client.entities.Operator;
+import com.principal.calculator.client.entities.States;
+import com.principal.calculator.client.entities.Symbol;
 
 public class Calculator {
 	private final static String ERROR_MSG = "Error";
 
 	private Operator op1;
 	private Operator op2;
-	private Operation operation;
+	private Symbol operation;
 	private States state;
 	private boolean finalEdition;
 
@@ -58,12 +52,14 @@ public class Calculator {
 		this.finalEdition = finalOperator;
 	}
 
-	public Operation getOperation() {
+	public Symbol getOperation() {
 		return operation;
 	}
 
-	public void setOperation(Operation operation) {
-		this.operation = operation;
+	public void setOperation(Symbol operation) {
+		if (operation.isOperator()) {
+			this.operation = operation;
+		}
 	}
 
 	public String AddSymbol(String buttonSymbol) {
@@ -101,12 +97,12 @@ public class Calculator {
 	}
 
 	public String Operate(String buttonOperation) {
-		Operation operation = Operation.valueOfBySymbol(buttonOperation);
-		if (operation == null) {
+		Symbol operation = Symbol.valueOfBySymbol(buttonOperation);
+		if (operation == null || !operation.isOperator()) {
 			resetValues();
 			return ERROR_MSG;
 		}
-		String result = ERROR_MSG;
+		String result = "";
 		switch (operation) {
 		case CLEAN:
 			resetValues();
@@ -119,21 +115,13 @@ public class Calculator {
 		case EQUAL:
 			// status = 1
 			if (state.equals(States.GETTING_OP1)) {
-				state = States.GETTING_OP2;
 				finalEdition = true;
 			} else {
 				// status = 2
-				if (this.operation.equals(Operation.PORC)){
-					if (op1.getValue().equals("0") || op2.getValue().equals("0")){
-						return ERROR_MSG;
-					}
-					String expression = op1.getValue()+Operation.MULT.getSymbol()+op2.getValue()+Operation.DIV.getSymbol()+"100";
-					op1.setValue(evaluateExpression(expression));
-				}else {
-					op1.setValue(Evaluate());
-				}
+				op1.setValue(Evaluate());
 				finalEdition = true;
 				op2.clean();
+				state = States.GETTING_OP1;
 			}
 
 			result = op1.getValue();
@@ -162,31 +150,48 @@ public class Calculator {
 	}
 
 	private String Evaluate() {
+		float op1FloatVal = 0;
+		float op2FloatVal = 0;
+		float resultValue = 0;
+
 		try {
-			op1.toFloat();
-			op2.toFloat();
+			op1FloatVal = op1.toFloat();
+			op2FloatVal = op2.toFloat();
 		} catch (Exception e) {
 			resetValues();
 			return ERROR_MSG;
 		}
-		String expression = op1.getValue() + operation.getSymbol() + op2.getValue();
 
-		return evaluateExpression(expression);
-	}
-
-	private String evaluateExpression(String expression){
-		ScriptEngineManager manager = new ScriptEngineManager();
-		ScriptEngine engine = manager.getEngineByName("js");
-
-		try {
-			Object result = engine.eval(expression);
-			return result.toString();
-		} catch (ScriptException se) {
-			resetValues();
-			return ERROR_MSG;
+		switch (operation) {
+		case PLUS:
+			resultValue = op1FloatVal + op2FloatVal;
+			break;
+		case MINUS:
+			resultValue = op1FloatVal - op2FloatVal;
+			break;
+		case MULT:
+			resultValue = op1FloatVal * op2FloatVal;
+			break;
+		case DIV:
+			if (op2FloatVal == 0) {
+				return ERROR_MSG;
+			}
+			resultValue = op1FloatVal / op2FloatVal;
+			break;
+		case PORC:
+			if (op1.getValue().equals("0") || op2.getValue().equals("0")) {
+				return ERROR_MSG;
+			}
+			resultValue = op1FloatVal * op2FloatVal / 100;
+			break;
 		}
+		return formatDisplayText(resultValue);
 	}
-	
+
+	private String formatDisplayText(float floatValue) {
+		return Float.toString(floatValue);
+	}
+
 	public void resetValues() {
 		op1.clean();
 		op2.clean();

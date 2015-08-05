@@ -1,4 +1,4 @@
-package com.calculator.entities;
+package com.principal.calculator.client.entities;
 
 public class Operator {
 	private final static String EMPTY_VALUE = "";
@@ -67,7 +67,7 @@ public class Operator {
 
 	public float toFloat() throws NumberFormatException {
 		// check the decimal separator in locale
-		return Float.parseFloat(value);
+		return Float.parseFloat(getValue());
 	}
 
 	public boolean isValid() {
