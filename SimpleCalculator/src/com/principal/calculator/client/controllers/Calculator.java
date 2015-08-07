@@ -135,7 +135,9 @@ public class Calculator {
 			} else {
 				if (state.equals(States.GETTING_OP2)) {
 					String eval = Evaluate();
-					op1.setValue(eval);
+					if (!eval.equals(ERROR_MSG)){
+						op1.setValue(eval);
+					}
 					op2.clean();
 					this.operation = operation;
 					state = States.GETTING_OP2;
@@ -184,6 +186,8 @@ public class Calculator {
 			}
 			resultValue = op1FloatVal * op2FloatVal / 100;
 			break;
+		default:
+			return ERROR_MSG;
 		}
 		return formatDisplayText(resultValue);
 	}

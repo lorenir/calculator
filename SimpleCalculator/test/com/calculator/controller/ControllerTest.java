@@ -172,7 +172,6 @@ public class ControllerTest {
 		// Division with a zero
 		assertEquals(calculator.Operate(Symbol.DIV.getSymbol()), "15.0");
 		assertEquals(calculator.AddSymbol(Symbol.ZERO.getSymbol()), "0");
-		assertEquals(calculator.Operate(Symbol.EQUAL.getSymbol()), "Error");
 
 		// Operation + Equal + Operation
 		calculator.resetValues();
@@ -181,9 +180,17 @@ public class ControllerTest {
 		assertEquals(calculator.AddSymbol(Symbol.FIVE.getSymbol()), "5");
 		assertEquals(calculator.Operate(Symbol.EQUAL.getSymbol()), "0.35");
 		assertEquals(calculator.Operate(Symbol.PLUS.getSymbol()), "0.35");
-		
-		
+	}
+	
+	
+	@Test
+	public void notComunOperationTest() {
 
+
+		// Operation +  Operation
+		calculator.resetValues();
+		assertEquals(calculator.Operate(Symbol.PORC.getSymbol()), "0");
+		assertEquals(calculator.Operate(Symbol.PLUS.getSymbol()), "0");
 	}
 
 }

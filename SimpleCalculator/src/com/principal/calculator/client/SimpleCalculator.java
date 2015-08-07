@@ -1,20 +1,21 @@
 package com.principal.calculator.client;
 
 import com.google.gwt.core.client.EntryPoint;
+import com.google.gwt.core.client.GWT;
+import com.google.gwt.event.logical.shared.SelectionEvent;
+import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.i18n.client.HasDirection.Direction;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.FlexTable;
-import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.principal.calculator.client.controllers.Calculator;
 import com.principal.calculator.client.entities.Symbol;
-import com.sencha.gxt.widget.core.client.ContentPanel;
-import com.sencha.gxt.widget.core.client.Dialog;
-import com.sencha.gxt.widget.core.client.Dialog.PredefinedButton;
+import com.sencha.gxt.core.client.resources.ThemeStyles;
 import com.sencha.gxt.widget.core.client.FramedPanel;
+import com.sencha.gxt.widget.core.client.box.MessageBox;
 import com.sencha.gxt.widget.core.client.button.TextButton;
-import com.sencha.gxt.widget.core.client.container.BoxLayoutContainer.BoxLayoutPack;
 import com.sencha.gxt.widget.core.client.container.MarginData;
 import com.sencha.gxt.widget.core.client.container.VerticalLayoutContainer;
 import com.sencha.gxt.widget.core.client.container.VerticalLayoutContainer.VerticalLayoutData;
@@ -22,12 +23,19 @@ import com.sencha.gxt.widget.core.client.event.SelectEvent;
 import com.sencha.gxt.widget.core.client.event.SelectEvent.SelectHandler;
 import com.sencha.gxt.widget.core.client.form.FloatField;
 import com.sencha.gxt.widget.core.client.info.Info;
+import com.sencha.gxt.widget.core.client.menu.Item;
+import com.sencha.gxt.widget.core.client.menu.Menu;
+import com.sencha.gxt.widget.core.client.menu.MenuBar;
+import com.sencha.gxt.widget.core.client.menu.MenuBarItem;
+import com.sencha.gxt.widget.core.client.menu.MenuItem;
 
 /**
  * Entry point classes define <code>onModuleLoad()</code>.
  */
 
 public class SimpleCalculator implements IsWidget, EntryPoint {
+
+	private final ConversionServiceAsync conversionService = GWT.create(ConversionService.class);
 
 	private FramedPanel widget;
 	private Calculator calculator;
@@ -42,23 +50,22 @@ public class SimpleCalculator implements IsWidget, EntryPoint {
 
 			// FlexTable for Display
 			FlexTable tableDisplay = new FlexTable();
-			tableDisplay.setCellSpacing(1);
-			tableDisplay.setCellPadding(1);
+			tableDisplay.setCellSpacing(4);
+			tableDisplay.setCellPadding(2);
 			tableDisplay.setBorderWidth(0);
 
 			calculatorDisplay = new FloatField();
 			calculatorDisplay.setText("0");
 			calculatorDisplay.setReadOnly(true);
-			//calculatorDisplay.setLayoutData(new textData());;
 			calculatorDisplay.setDirection(Direction.RTL);
-			calculatorDisplay.setSize("172px", "100%");
+			calculatorDisplay.setSize("178px", "100%");
 
 			tableDisplay.setWidget(0, 0, calculatorDisplay);
 
 			// FlexTable for Buttons
 			FlexTable tableButtons = new FlexTable();
-			tableButtons.setCellSpacing(1);
-			tableButtons.setCellPadding(1);
+			tableButtons.setCellSpacing(4);
+			tableButtons.setCellPadding(2);
 			tableButtons.setBorderWidth(0);
 
 			SelectHandler handlerNumber = new SelectHandler() {
@@ -73,7 +80,7 @@ public class SimpleCalculator implements IsWidget, EntryPoint {
 					Info.display("Digit", "Display: " + displayText + " op1: " + calculator.getOp1().getValue() + " op2: "
 							+ calculator.getOp2().getValue() + " operation: " + calculator.getOperation()
 							+ " finalEdition: " + calculator.isFinalOperator() + " state: " + calculator.getState());
-				} // onSelect
+				}
 			}; // handlerNumber
 
 			SelectHandler handlerOperator = new SelectHandler() {
@@ -87,7 +94,8 @@ public class SimpleCalculator implements IsWidget, EntryPoint {
 					
 					Info.display("Operator", "Display: " + displayText + " op1: " + calculator.getOp1().getValue() + " op2: "
 							+ calculator.getOp2().getValue() + " operation: " + calculator.getOperation()
-							+ " finalEdition: " + calculator.isFinalOperator() + " state: " + calculator.getState());				} // onSelect
+							+ " finalEdition: " + calculator.isFinalOperator() + " state: " + calculator.getState());				
+					}
 			}; // handlerOperator
 
 			// Button table creation
@@ -108,60 +116,64 @@ public class SimpleCalculator implements IsWidget, EntryPoint {
 			}
 
 			// Bar menu for additional operations
-			final String btn1 = "to Binary";
-			final String btn2 = "Bin History";
-			final String btn3 = "See all vars";
+			final String txtMenuOptionConvert = "Decimal to Binary";
+			final String txtMenuOptionHistory = "Binary Conversion History...";
+			final String txtMenuOptionDebug = "See all internal calculator vars...";
 			
-			SelectHandler handlerSpecialOperator = new SelectHandler() {
-				@Override
-				public void onSelect(SelectEvent event) {
-					TextButton btn = (TextButton) event.getSource();
-					String action = btn.getText();
-					if (action == btn1) {
-						//String displayText = action; //calculator.SpecialOperate(action);
-						calculatorDisplay.setText(action+"...");
-					} else if (action == btn2) {
-						//String displayText = action; //calculator.SpecialOperate(action);
-						calculatorDisplay.setText(action+"...");
-					} else if (action == btn3) {
-						 Dialog d = new Dialog();
-						 d.setModal(true);
-						 d.setHeadingText("Debug variables");
-						 d.setBorders(true);
-						 d.setBodyBorder(true);
-						 d.setWidget(new HTML("op1: " + calculator.getOp1().getValue() + " op2: "
-									+ calculator.getOp1().getValue() + " operation: " + calculator.getOperation()
-									+ " finalEdition: " + calculator.isFinalOperator() + " state: " + calculator.getState()));
-						 d.setBodyStyle("backgroundColor:white;padding:13px;");
-						 d.setPixelSize(300, 150);
-						 d.setHideOnButtonClick(true);
-						 d.setPredefinedButtons(PredefinedButton.OK);
-						 d.setButtonAlign(BoxLayoutPack.CENTER);
-						 d.show();
-					}
-										
-					Info.display("Special Operator", "Display: " + action + " op1: " + calculator.getOp1().getValue() + " op2: "
-							+ calculator.getOp1().getValue() + " operation: " + calculator.getOperation()
-							+ " finalEdition: " + calculator.isFinalOperator() + " state: " + calculator.getState());				} // onSelect
-			}; // handlerSpecialOperator
-
-			ContentPanel menuPanel = new ContentPanel();
-			menuPanel.addButton(new TextButton(btn1, handlerSpecialOperator));
-			menuPanel.addButton(new TextButton(btn2, handlerSpecialOperator));
-			menuPanel.addButton(new TextButton(btn3, handlerSpecialOperator));
-			menuPanel.setHeaderVisible(false);
-			
+			SelectionHandler<Item> handler = new SelectionHandler<Item>() {
+			        @Override
+			        public void onSelection(SelectionEvent<Item> event) {
+			          if (event.getSelectedItem() instanceof MenuItem) {
+			            MenuItem item = (MenuItem) event.getSelectedItem();
+			            String action = item.getText();
+						if (action == txtMenuOptionConvert) {
+							convert(calculatorDisplay.getText());
+							//String displayText = action; //calculator.SpecialOperate(action);
+							calculatorDisplay.setText(action+"...");
+						} else if (action == txtMenuOptionHistory) {
+							//String displayText = action; //calculator.SpecialOperate(action);
+							calculatorDisplay.setText(action+"...");
+						} else if (action == txtMenuOptionDebug) {
+							 MessageBox mb = new MessageBox("Debug variables:");
+							 mb.setMessage("op1: [" + calculator.getOp1().getValue() + "] - op2: ["
+								+ calculator.getOp2().getValue() + "] - operation: [" + calculator.getOperation()
+								+ "] - finalEdition: [" + calculator.isFinalOperator() + "] - state: [" + calculator.getState() + "]");
+							 mb.show();
+						}
+			          }
+			        }
+			};
+			 			 
+			Menu subMenuConvert = new Menu();
+			subMenuConvert.addSelectionHandler(handler);
+			subMenuConvert.add(new MenuItem(txtMenuOptionConvert));
+			subMenuConvert.add(new MenuItem(txtMenuOptionHistory));
+			MenuBarItem menuBarConvert = new MenuBarItem("Convert", subMenuConvert);
+			 
+			Menu subMenuDebug = new Menu();
+			subMenuDebug.addSelectionHandler(handler);
+			subMenuDebug.add(new MenuItem(txtMenuOptionDebug));
+			MenuBarItem menuBarDebug = new MenuBarItem("Debug", subMenuDebug);
+			 			 
+			MenuBar menuBar = new MenuBar();
+			menuBar.addStyleName(ThemeStyles.get().style().borderBottom());
+			menuBar.add(menuBarConvert);
+			menuBar.add(menuBarDebug);
+			 
 			// VerticalLayoutContainer for Buttons
 			VerticalLayoutContainer simpleCalculatorContainer = new VerticalLayoutContainer();
-			simpleCalculatorContainer.add(tableDisplay, new VerticalLayoutData(1, .1));
-			simpleCalculatorContainer.add(tableButtons, new VerticalLayoutData(1, .8));
-			simpleCalculatorContainer.add(menuPanel, new VerticalLayoutData(1, .1));
+			simpleCalculatorContainer.add(menuBar, new VerticalLayoutData(-1, .1));
+			simpleCalculatorContainer.add(tableDisplay, new VerticalLayoutData(-1, .15));
+			simpleCalculatorContainer.add(tableButtons, new VerticalLayoutData(1, .75));
 			
 			// FramedPanel
 			widget = new FramedPanel();
 			widget.setHeadingText("Calculator");
-			widget.add(simpleCalculatorContainer, new MarginData(5));
-			widget.setPixelSize(200, 300);
+			widget.setBorders(true);
+			widget.setBodyBorder(true);
+			widget.setPixelSize(200, 340);
+			widget.setLayoutData(new MarginData(-1));
+			widget.add(simpleCalculatorContainer, new MarginData(-1));
 		} // if
 
 		return widget;
@@ -171,6 +183,28 @@ public class SimpleCalculator implements IsWidget, EntryPoint {
 	public void onModuleLoad() {
 		// FramedPanel --> VerticalLayoutContainer --> FlexTable
 		RootPanel.get().add(asWidget());
+	}
+	
+	private void convert(String decimalNumber) {
+		// First, we validate the input.
+		int pos = decimalNumber.indexOf(".");
+		String integerPart = decimalNumber;
+		if (pos>0){
+			 integerPart = decimalNumber.substring(0,decimalNumber.indexOf("."));
+		}
+		if (integerPart == null || integerPart.isEmpty()){
+			calculatorDisplay.setText("ERROR");			
+			return;
+		}
+		
+		conversionService.conversion(Long.parseLong(integerPart), new AsyncCallback<String>() {
+			public void onFailure(Throwable caught) {
+				calculatorDisplay.setText("Conexion Error");			
+			}
+			public void onSuccess(String result) {
+				calculatorDisplay.setText(result);
+			}
+		});
 	}
 
 } // SimpleCalculator

@@ -66,6 +66,18 @@ public class OperatorTest {
 
 		opTest.setValue("0.");
 		assertEquals(opTest.toFloat(), 0f, 0);
+	}
+	
+	@Test
+	public void toLongTest() {
+		String decimalNumber = "12.3";
+		int p = decimalNumber.indexOf(".");
+		String integerPart = null;
+		if (p>0){
+			 integerPart = decimalNumber.substring(0,decimalNumber.indexOf("."));
+
+		}
+		String q = integerPart;
 
 	}
 
