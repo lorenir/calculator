@@ -20,13 +20,17 @@ public class ConversionServiceImpl extends RemoteServiceServlet implements Conve
 
 	@Override
 	public String conversion(Long decimal) throws IllegalArgumentException {
+		
 		String binary = null;
 		try {
 			binary = Long.toBinaryString(decimal);
 			Date conversionDate = new Date();
-			BinaryConversionRegister bcr = new BinaryConversionRegister(decimal.toString(), binary, conversionDate);
+			BinaryConversionRegister bcr = new BinaryConversionRegister(decimal.toString(), binary,conversionDate);
 			bcrDAO.addRegister(bcr);
 		} catch (Exception e) {
+			if (log == null){
+				log = Logger.getGlobal();
+			}
 			log.warning("Problem saving in DB. Trace: " + e.getMessage());
 		}
 		return binary != null ? binary : "ERROR";

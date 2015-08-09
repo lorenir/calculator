@@ -1,9 +1,16 @@
 package com.principal.calculator.client;
 
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import com.google.gwt.cell.client.DateCell;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.editor.client.Editor.Path;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
+import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.i18n.client.HasDirection.Direction;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.FlexTable;
@@ -12,7 +19,13 @@ import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.principal.calculator.client.controllers.Calculator;
 import com.principal.calculator.client.entities.Symbol;
+import com.principal.calculator.shared.domain.BinaryConversionRegister;
+import com.sencha.gxt.core.client.ValueProvider;
 import com.sencha.gxt.core.client.resources.ThemeStyles;
+import com.sencha.gxt.data.shared.ListStore;
+import com.sencha.gxt.data.shared.ModelKeyProvider;
+import com.sencha.gxt.data.shared.PropertyAccess;
+import com.sencha.gxt.widget.core.client.Dialog;
 import com.sencha.gxt.widget.core.client.FramedPanel;
 import com.sencha.gxt.widget.core.client.box.MessageBox;
 import com.sencha.gxt.widget.core.client.button.TextButton;
@@ -22,6 +35,9 @@ import com.sencha.gxt.widget.core.client.container.VerticalLayoutContainer.Verti
 import com.sencha.gxt.widget.core.client.event.SelectEvent;
 import com.sencha.gxt.widget.core.client.event.SelectEvent.SelectHandler;
 import com.sencha.gxt.widget.core.client.form.FloatField;
+import com.sencha.gxt.widget.core.client.grid.ColumnConfig;
+import com.sencha.gxt.widget.core.client.grid.ColumnModel;
+import com.sencha.gxt.widget.core.client.grid.Grid;
 import com.sencha.gxt.widget.core.client.info.Info;
 import com.sencha.gxt.widget.core.client.menu.Item;
 import com.sencha.gxt.widget.core.client.menu.Menu;
@@ -35,11 +51,12 @@ import com.sencha.gxt.widget.core.client.menu.MenuItem;
 
 public class SimpleCalculator implements IsWidget, EntryPoint {
 
-	private final ConversionServiceAsync conversionService = GWT.create(ConversionService.class);
+	private final ConversionServiceAsync conversionServiceAsync = GWT.create(ConversionService.class);
 
 	private FramedPanel widget;
 	private Calculator calculator;
 	private FloatField calculatorDisplay;
+
 
 	@Override
 	public Widget asWidget() {
@@ -57,6 +74,10 @@ public class SimpleCalculator implements IsWidget, EntryPoint {
 			calculatorDisplay = new FloatField();
 			calculatorDisplay.setText("0");
 			calculatorDisplay.setReadOnly(true);
+			calculatorDisplay.setAllowTextSelection(false);
+			calculatorDisplay.setEditable(false);
+			calculatorDisplay.setBaseChars("0123456789.-");
+			//calculatorDisplay.setLayoutData(layoutData);
 			calculatorDisplay.setDirection(Direction.RTL);
 			calculatorDisplay.setSize("178px", "100%");
 
@@ -76,9 +97,10 @@ public class SimpleCalculator implements IsWidget, EntryPoint {
 					String displayText = calculator.AddSymbol(txt);
 
 					calculatorDisplay.setText(displayText);
-					
-					Info.display("Digit", "Display: " + displayText + " op1: " + calculator.getOp1().getValue() + " op2: "
-							+ calculator.getOp2().getValue() + " operation: " + calculator.getOperation()
+
+					// Debug info
+					Info.display("Digit", "Display: " + displayText + " op1: " + calculator.getOp1().getValue()
+							+ " op2: " + calculator.getOp2().getValue() + " operation: " + calculator.getOperation()
 							+ " finalEdition: " + calculator.isFinalOperator() + " state: " + calculator.getState());
 				}
 			}; // handlerNumber
@@ -91,11 +113,12 @@ public class SimpleCalculator implements IsWidget, EntryPoint {
 					String displayText = calculator.Operate(txt);
 
 					calculatorDisplay.setText(displayText);
-					
-					Info.display("Operator", "Display: " + displayText + " op1: " + calculator.getOp1().getValue() + " op2: "
-							+ calculator.getOp2().getValue() + " operation: " + calculator.getOperation()
-							+ " finalEdition: " + calculator.isFinalOperator() + " state: " + calculator.getState());				
-					}
+
+					// Debug info
+					Info.display("Operator", "Display: " + displayText + " op1: " + calculator.getOp1().getValue()
+							+ " op2: " + calculator.getOp2().getValue() + " operation: " + calculator.getOperation()
+							+ " finalEdition: " + calculator.isFinalOperator() + " state: " + calculator.getState());
+				}
 			}; // handlerOperator
 
 			// Button table creation
@@ -116,56 +139,54 @@ public class SimpleCalculator implements IsWidget, EntryPoint {
 			}
 
 			// Bar menu for additional operations
-			final String txtMenuOptionConvert = "Decimal to Binary";
-			final String txtMenuOptionHistory = "Binary Conversion History...";
-			final String txtMenuOptionDebug = "See all internal calculator vars...";
-			
-			SelectionHandler<Item> handler = new SelectionHandler<Item>() {
-			        @Override
-			        public void onSelection(SelectionEvent<Item> event) {
-			          if (event.getSelectedItem() instanceof MenuItem) {
-			            MenuItem item = (MenuItem) event.getSelectedItem();
-			            String action = item.getText();
+			final String txtMenuOptionConvert = "Decimal to Binary...";
+			final String txtMenuOptionHistory = "Show Binary Conversion History...";
+			final String txtMenuOptionDebug = "Show Internal calculator vars...";
+
+			SelectionHandler<Item> handlerSpecialOperator = new SelectionHandler<Item>() {
+				@Override
+				public void onSelection(SelectionEvent<Item> event) {
+					if (event.getSelectedItem() instanceof MenuItem) {
+						MenuItem item = (MenuItem) event.getSelectedItem();
+						String action = item.getText();
 						if (action == txtMenuOptionConvert) {
-							convert(calculatorDisplay.getText());
-							//String displayText = action; //calculator.SpecialOperate(action);
-							calculatorDisplay.setText(action+"...");
+							convertToBinary(calculatorDisplay.getText());
 						} else if (action == txtMenuOptionHistory) {
-							//String displayText = action; //calculator.SpecialOperate(action);
-							calculatorDisplay.setText(action+"...");
+							showConversionHistory();
 						} else if (action == txtMenuOptionDebug) {
-							 MessageBox mb = new MessageBox("Debug variables:");
-							 mb.setMessage("op1: [" + calculator.getOp1().getValue() + "] - op2: ["
-								+ calculator.getOp2().getValue() + "] - operation: [" + calculator.getOperation()
-								+ "] - finalEdition: [" + calculator.isFinalOperator() + "] - state: [" + calculator.getState() + "]");
-							 mb.show();
+							MessageBox mb = new MessageBox("Debug variables:");
+							mb.setMessage("op1: [" + calculator.getOp1().getValue() + "] - op2: ["
+									+ calculator.getOp2().getValue() + "] - operation: [" + calculator.getOperation()
+									+ "] - finalEdition: [" + calculator.isFinalOperator() + "] - state: ["
+									+ calculator.getState() + "]");
+							mb.show();
 						}
-			          }
-			        }
-			};
-			 			 
+					}
+				}
+			}; // handlerSpecialOperator
+
 			Menu subMenuConvert = new Menu();
-			subMenuConvert.addSelectionHandler(handler);
+			subMenuConvert.addSelectionHandler(handlerSpecialOperator);
 			subMenuConvert.add(new MenuItem(txtMenuOptionConvert));
 			subMenuConvert.add(new MenuItem(txtMenuOptionHistory));
 			MenuBarItem menuBarConvert = new MenuBarItem("Convert", subMenuConvert);
-			 
+
 			Menu subMenuDebug = new Menu();
-			subMenuDebug.addSelectionHandler(handler);
+			subMenuDebug.addSelectionHandler(handlerSpecialOperator);
 			subMenuDebug.add(new MenuItem(txtMenuOptionDebug));
 			MenuBarItem menuBarDebug = new MenuBarItem("Debug", subMenuDebug);
-			 			 
+
 			MenuBar menuBar = new MenuBar();
 			menuBar.addStyleName(ThemeStyles.get().style().borderBottom());
 			menuBar.add(menuBarConvert);
 			menuBar.add(menuBarDebug);
-			 
+
 			// VerticalLayoutContainer for Buttons
 			VerticalLayoutContainer simpleCalculatorContainer = new VerticalLayoutContainer();
 			simpleCalculatorContainer.add(menuBar, new VerticalLayoutData(-1, .1));
 			simpleCalculatorContainer.add(tableDisplay, new VerticalLayoutData(-1, .15));
 			simpleCalculatorContainer.add(tableButtons, new VerticalLayoutData(1, .75));
-			
+
 			// FramedPanel
 			widget = new FramedPanel();
 			widget.setHeadingText("Calculator");
@@ -184,27 +205,99 @@ public class SimpleCalculator implements IsWidget, EntryPoint {
 		// FramedPanel --> VerticalLayoutContainer --> FlexTable
 		RootPanel.get().add(asWidget());
 	}
-	
-	private void convert(String decimalNumber) {
-		// First, we validate the input.
+
+	private void convertToBinary(String decimalNumber) {
 		int pos = decimalNumber.indexOf(".");
+
 		String integerPart = decimalNumber;
-		if (pos>0){
-			 integerPart = decimalNumber.substring(0,decimalNumber.indexOf("."));
+		if (pos > 0) {
+			integerPart = decimalNumber.substring(0, decimalNumber.indexOf("."));
 		}
-		if (integerPart == null || integerPart.isEmpty()){
-			calculatorDisplay.setText("ERROR");			
+		if (integerPart == null || integerPart.isEmpty()) {
+			MessageBox mb = new MessageBox("Converting decimal to binary:");
+			mb.setMessage("ERROR");
+			mb.show();
 			return;
 		}
-		
-		conversionService.conversion(Long.parseLong(integerPart), new AsyncCallback<String>() {
+
+		conversionServiceAsync.conversion(Long.parseLong(integerPart), new AsyncCallback<String>() {
 			public void onFailure(Throwable caught) {
-				calculatorDisplay.setText("Conexion Error");			
+				MessageBox mb = new MessageBox("Converting decimal to binary:");
+				mb.setMessage("Conexion Error");
+				mb.show();
 			}
+
 			public void onSuccess(String result) {
-				calculatorDisplay.setText(result);
+				MessageBox mb = new MessageBox("Converting decimal to binary:");
+				mb.setMessage(calculatorDisplay.getText() + ":" + result);
+				mb.show();
 			}
 		});
+	} // convert
+
+	// just to show the converter feature
+	interface PlaceProperties extends PropertyAccess<BinaryConversionRegister> {
+		@Path("id")
+		ModelKeyProvider<BinaryConversionRegister> key();
+		ValueProvider<BinaryConversionRegister, String> decimal();
+		ValueProvider<BinaryConversionRegister, String> binary();
+		ValueProvider<BinaryConversionRegister, Date> dateConversion();
 	}
+
+	private void showConversionHistory() {
+
+		conversionServiceAsync.conversionHistory(new AsyncCallback<List<BinaryConversionRegister>>() {
+			public void onFailure(Throwable caught) {
+				MessageBox mb = new MessageBox("Converting decimal to binary:");
+				mb.setMessage("Conexion Error");
+				mb.show();
+			}
+
+			@Override
+			public void onSuccess(List<BinaryConversionRegister> result) {
+				final PlaceProperties properties = GWT.create(PlaceProperties.class);
+				Grid<BinaryConversionRegister> grid;
+
+				// Create Grid model
+				ColumnConfig<BinaryConversionRegister, String> decimalColumn = new ColumnConfig<BinaryConversionRegister, String>(properties.decimal(), 110, "Decimal");
+				ColumnConfig<BinaryConversionRegister, String> binarylColumn = new ColumnConfig<BinaryConversionRegister, String>(properties.binary(), 150, "Binary");
+				ColumnConfig<BinaryConversionRegister, Date> dateColumn = new ColumnConfig<BinaryConversionRegister, Date>(properties.dateConversion(), 130, "Date");
+				dateColumn.setCell(new DateCell(DateTimeFormat.getFormat("dd/mm/yyyy hh:mm aaa")));
+
+				List<ColumnConfig<BinaryConversionRegister, ?>> conversioRegisterList = new ArrayList<ColumnConfig<BinaryConversionRegister, ?>>();
+				conversioRegisterList.add(decimalColumn);
+				conversioRegisterList.add(binarylColumn);
+				conversioRegisterList.add(dateColumn);
+
+				ColumnModel<BinaryConversionRegister> columns = new ColumnModel<BinaryConversionRegister>(conversioRegisterList);
+				ListStore<BinaryConversionRegister> history = new ListStore<BinaryConversionRegister>(properties.key());
+
+				// Load Data
+				for (BinaryConversionRegister bcr : result) {					
+					history.add(bcr);
+				}
+				
+				// Create Grid
+				grid = new Grid<BinaryConversionRegister>(history, columns);
+				grid.getView().setAutoExpandColumn(decimalColumn);
+
+				// Create Dialog
+				VerticalLayoutContainer verticalLayoutContainer = new VerticalLayoutContainer();
+				verticalLayoutContainer.setBorders(true);
+				verticalLayoutContainer.add(grid, new VerticalLayoutData(1, 1));
+
+				Dialog historyDialog = new Dialog();
+				historyDialog.setBodyBorder(false);
+				historyDialog.setHeadingText("Binary Conversions History");
+				historyDialog.setWidth(400);
+				historyDialog.setHeight(300);
+				historyDialog.setHideOnButtonClick(true);
+				historyDialog.setModal(true);
+				historyDialog.add(verticalLayoutContainer);
+				historyDialog.show();
+			}
+		});
+
+	} // showConversionHistory
 
 } // SimpleCalculator

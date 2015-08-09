@@ -30,6 +30,9 @@ public class Operator {
 
 	public String addSymbol(Symbol symbol) {
 		if (symbol.equals(Symbol.SIGN)) {
+			if (getValue().equals("0")){
+				return getValue();
+			}
 			return changeSign();
 		}
 		return addCharacter(symbol);

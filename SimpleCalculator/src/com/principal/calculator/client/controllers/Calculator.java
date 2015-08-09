@@ -6,6 +6,7 @@ import com.principal.calculator.client.entities.Symbol;
 
 public class Calculator {
 	private final static String ERROR_MSG = "Error";
+	private final static int MAX_DIGIT = 24;
 
 	private Operator op1;
 	private Operator op2;
@@ -67,31 +68,29 @@ public class Calculator {
 		String returningValue = "0";
 		switch (this.state) {
 		case GETTING_OP1:
-			if (finalEdition) {
-				if (!((symbol.equals(Symbol.DEC_SEPARATOR)) && (op1.isZero()))) {
-					op1.clean();
-				}
-				finalEdition = false;
-			}
-			if (symbol == null) {
-				returningValue = op1.getValue();
-			} else {
-				returningValue = op1.addSymbol(symbol);
-			}
-
+			returningValue = addSymbolOperator(op1, symbol);
 			break;
 		case GETTING_OP2:
-			if (finalEdition) {
-				op2.clean();
-				finalEdition = false;
-			}
-			if (symbol == null) {
-				returningValue = op2.getValue();
-			} else {
-				returningValue = op2.addSymbol(symbol);
-			}
+			returningValue = addSymbolOperator(op2, symbol);
 			break;
+		}
+		return returningValue;
+	}
 
+	private String addSymbolOperator(Operator op, Symbol symbol) {
+		String returningValue = "0";
+		if (finalEdition) {
+			op.clean();
+			finalEdition = false;
+		}
+		if (symbol == null) {
+			returningValue = op.getValue();
+		} else {
+			if (op.getValue().length() < MAX_DIGIT) {
+				returningValue = op.addSymbol(symbol);
+			} else {
+				returningValue = op.getValue();
+			}
 		}
 		return returningValue;
 	}
@@ -135,7 +134,7 @@ public class Calculator {
 			} else {
 				if (state.equals(States.GETTING_OP2)) {
 					String eval = Evaluate();
-					if (!eval.equals(ERROR_MSG)){
+					if (!eval.equals(ERROR_MSG)) {
 						op1.setValue(eval);
 					}
 					op2.clean();
@@ -193,6 +192,9 @@ public class Calculator {
 	}
 
 	private String formatDisplayText(float floatValue) {
+		if (floatValue == (long) floatValue) {
+			return Long.toString((long) floatValue);
+		}
 		return Float.toString(floatValue);
 	}
 
