@@ -59,7 +59,6 @@ public class SimpleCalculator implements IsWidget, EntryPoint {
 	private Calculator calculator;
 	private TextField calculatorDisplay;
 
-
 	@Override
 	public Widget asWidget() {
 		if (calculator == null) {
@@ -78,51 +77,53 @@ public class SimpleCalculator implements IsWidget, EntryPoint {
 				public void onKeyDown(KeyDownEvent event) {
 					int code = event.getNativeKeyCode();
 					String displayText = "NaN";
-					if (code>=48 && code<=57) {
+					if (code >= 48 && code <= 57) {
 						if (!event.isShiftKeyDown()) {
-							displayText = calculator.AddSymbol(String.valueOf(code-48));
-						} else if (code==48) {
+							displayText = calculator.AddSymbol(String.valueOf(code - 48));
+						} else if (code == 48) {
 							displayText = calculator.Operate(Symbol.EQUAL.getSymbol());
-						} else if (code==53) {
+						} else if (code == 53) {
 							displayText = calculator.Operate(Symbol.PORC.getSymbol());
-						} else if (code==55) {
+						} else if (code == 55) {
 							displayText = calculator.Operate(Symbol.DIV.getSymbol());
 						}
-					} else if (code>=96 && code<=105) {
-						displayText = calculator.AddSymbol(String.valueOf(code-96));
-					} else if (code==110 || code==188 || code==190) {
+					} else if (code >= 96 && code <= 105) {
+						displayText = calculator.AddSymbol(String.valueOf(code - 96));
+					} else if (code == 110 || code == 188 || code == 190) {
 						displayText = calculator.AddSymbol(Symbol.DEC_SEPARATOR.getSymbol());
-					} else if (code==78) {
+					} else if (code == 78) {
 						displayText = calculator.AddSymbol(Symbol.SIGN.getSymbol());
-											
-					} else if (code==8 | code==46) {
+
+					} else if (code == 8 | code == 46) {
 						displayText = calculator.Operate(Symbol.CLEAN_ELEMENT.getSymbol());
-					} else if (code==27 || code==67) {
+					} else if (code == 27 || code == 67) {
 						displayText = calculator.Operate(Symbol.CLEAN.getSymbol());
-					} else if (code==13 || code==61) {
+					} else if (code == 13 || code == 61) {
 						displayText = calculator.Operate(Symbol.EQUAL.getSymbol());
-					} else if (code==106 || code==170 || code==88) {
+					} else if (code == 106 || code == 170 || code == 88) {
 						displayText = calculator.Operate(Symbol.MULT.getSymbol());
-					} else if (code==107) {
+					} else if (code == 107) {
 						displayText = calculator.Operate(Symbol.PLUS.getSymbol());
-					} else if (code==171) {
-						displayText = (event.isShiftKeyDown())?calculator.Operate(Symbol.MULT.getSymbol()):calculator.Operate(Symbol.PLUS.getSymbol());
-					} else if (code==109 || code==173) {
+					} else if (code == 171) {
+						displayText = (event.isShiftKeyDown()) ? calculator.Operate(Symbol.MULT.getSymbol())
+								: calculator.Operate(Symbol.PLUS.getSymbol());
+					} else if (code == 109 || code == 173) {
 						displayText = calculator.Operate(Symbol.MINUS.getSymbol());
-					} else if (code==111 || code==47) {
+					} else if (code == 111 || code == 47) {
 						displayText = calculator.Operate(Symbol.DIV.getSymbol());
-					} else if (code==80 || code==37) {
+					} else if (code == 80 || code == 37) {
 						displayText = calculator.Operate(Symbol.PORC.getSymbol());
 					}
-					
-					if (!displayText.equals("NaN"))calculatorDisplay.setText(displayText);
 
-//					// Debug
-//					Info.display("keyDown", 
-//							String.valueOf(event.getNativeKeyCode())+ ":" +
-//							String.valueOf(event.hashCode())+ ":" +
-//							String.valueOf(event.isShiftKeyDown())
-//							);				
+					if (!displayText.equals("NaN"))
+						calculatorDisplay.setText(displayText);
+
+					// // Debug
+					// Info.display("keyDown",
+					// String.valueOf(event.getNativeKeyCode())+ ":" +
+					// String.valueOf(event.hashCode())+ ":" +
+					// String.valueOf(event.isShiftKeyDown())
+					// );
 				}
 			}; // handlerNumber
 
@@ -132,7 +133,7 @@ public class SimpleCalculator implements IsWidget, EntryPoint {
 			calculatorDisplay.setAllowTextSelection(false);
 			calculatorDisplay.setSize("178px", "100%");
 			calculatorDisplay.addKeyDownHandler(keyHandler);
-			
+
 			tableDisplay.setWidget(0, 0, calculatorDisplay);
 
 			// FlexTable for Buttons
@@ -151,10 +152,13 @@ public class SimpleCalculator implements IsWidget, EntryPoint {
 					calculatorDisplay.setText(displayText);
 					calculatorDisplay.focus();
 
-//					// Debug info
-//					Info.display("Digit", "Display: " + displayText + " op1: " + calculator.getOp1().getValue()
-//							+ " op2: " + calculator.getOp2().getValue() + " operation: " + calculator.getOperation()
-//							+ " finalEdition: " + calculator.isFinalOperator() + " state: " + calculator.getState());
+					// // Debug info
+					// Info.display("Digit", "Display: " + displayText + " op1:
+					// " + calculator.getOp1().getValue()
+					// + " op2: " + calculator.getOp2().getValue() + "
+					// operation: " + calculator.getOperation()
+					// + " finalEdition: " + calculator.isFinalOperator() + "
+					// state: " + calculator.getState());
 				}
 			}; // handlerNumber
 
@@ -168,10 +172,13 @@ public class SimpleCalculator implements IsWidget, EntryPoint {
 					calculatorDisplay.setText(displayText);
 					calculatorDisplay.focus();
 
-//					// Debug info
-//					Info.display("Operator", "Display: " + displayText + " op1: " + calculator.getOp1().getValue()
-//							+ " op2: " + calculator.getOp2().getValue() + " operation: " + calculator.getOperation()
-//							+ " finalEdition: " + calculator.isFinalOperator() + " state: " + calculator.getState());
+					// // Debug info
+					// Info.display("Operator", "Display: " + displayText + "
+					// op1: " + calculator.getOp1().getValue()
+					// + " op2: " + calculator.getOp2().getValue() + "
+					// operation: " + calculator.getOperation()
+					// + " finalEdition: " + calculator.isFinalOperator() + "
+					// state: " + calculator.getState());
 				}
 			}; // handlerOperator
 
@@ -253,7 +260,7 @@ public class SimpleCalculator implements IsWidget, EntryPoint {
 		} // if
 
 		return widget;
-	}  // asWidget
+	} // asWidget
 
 	@Override
 	public void onModuleLoad() {
@@ -262,7 +269,6 @@ public class SimpleCalculator implements IsWidget, EntryPoint {
 		calculatorDisplay.focus();
 	}
 
-	
 	private void convertToBinary(String decimalNumber) {
 		int pos = decimalNumber.indexOf(".");
 
@@ -296,8 +302,11 @@ public class SimpleCalculator implements IsWidget, EntryPoint {
 	interface PlaceProperties extends PropertyAccess<BinaryConversionRegister> {
 		@Path("id")
 		ModelKeyProvider<BinaryConversionRegister> key();
+
 		ValueProvider<BinaryConversionRegister, String> decimal();
+
 		ValueProvider<BinaryConversionRegister, String> binary();
+
 		ValueProvider<BinaryConversionRegister, Date> dateConversion();
 	}
 
@@ -316,9 +325,12 @@ public class SimpleCalculator implements IsWidget, EntryPoint {
 				Grid<BinaryConversionRegister> grid;
 
 				// Create Grid model
-				ColumnConfig<BinaryConversionRegister, String> decimalColumn = new ColumnConfig<BinaryConversionRegister, String>(properties.decimal(), 110, "Decimal");
-				ColumnConfig<BinaryConversionRegister, String> binarylColumn = new ColumnConfig<BinaryConversionRegister, String>(properties.binary(), 150, "Binary");
-				ColumnConfig<BinaryConversionRegister, Date> dateColumn = new ColumnConfig<BinaryConversionRegister, Date>(properties.dateConversion(), 130, "Date");
+				ColumnConfig<BinaryConversionRegister, String> decimalColumn = new ColumnConfig<BinaryConversionRegister, String>(
+						properties.decimal(), 110, "Decimal");
+				ColumnConfig<BinaryConversionRegister, String> binarylColumn = new ColumnConfig<BinaryConversionRegister, String>(
+						properties.binary(), 150, "Binary");
+				ColumnConfig<BinaryConversionRegister, Date> dateColumn = new ColumnConfig<BinaryConversionRegister, Date>(
+						properties.dateConversion(), 130, "Date");
 				dateColumn.setCell(new DateCell(DateTimeFormat.getFormat("dd/mm/yyyy hh:mm aaa")));
 
 				List<ColumnConfig<BinaryConversionRegister, ?>> conversioRegisterList = new ArrayList<ColumnConfig<BinaryConversionRegister, ?>>();
@@ -326,14 +338,15 @@ public class SimpleCalculator implements IsWidget, EntryPoint {
 				conversioRegisterList.add(binarylColumn);
 				conversioRegisterList.add(dateColumn);
 
-				ColumnModel<BinaryConversionRegister> columns = new ColumnModel<BinaryConversionRegister>(conversioRegisterList);
+				ColumnModel<BinaryConversionRegister> columns = new ColumnModel<BinaryConversionRegister>(
+						conversioRegisterList);
 				ListStore<BinaryConversionRegister> history = new ListStore<BinaryConversionRegister>(properties.key());
 
 				// Load Data
-				for (BinaryConversionRegister bcr : result) {					
+				for (BinaryConversionRegister bcr : result) {
 					history.add(bcr);
 				}
-				
+
 				// Create Grid
 				grid = new Grid<BinaryConversionRegister>(history, columns);
 				grid.getView().setAutoExpandColumn(decimalColumn);
