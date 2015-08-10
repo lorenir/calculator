@@ -82,37 +82,37 @@ public class SimpleCalculator implements IsWidget, EntryPoint {
 						if (!event.isShiftKeyDown()) {
 							displayText = calculator.AddSymbol(String.valueOf(code-48));
 						} else if (code==48) {
-							displayText = calculator.Operate("=");
+							displayText = calculator.Operate(Symbol.EQUAL.getSymbol());
 						} else if (code==53) {
-							displayText = calculator.Operate("%");
+							displayText = calculator.Operate(Symbol.PORC.getSymbol());
 						} else if (code==55) {
-							displayText = calculator.Operate("/");
+							displayText = calculator.Operate(Symbol.DIV.getSymbol());
 						}
 					} else if (code>=96 && code<=105) {
 						displayText = calculator.AddSymbol(String.valueOf(code-96));
 					} else if (code==110 || code==188 || code==190) {
-						displayText = calculator.AddSymbol(".");
+						displayText = calculator.AddSymbol(Symbol.DEC_SEPARATOR.getSymbol());
 					} else if (code==78) {
 						displayText = calculator.AddSymbol(Symbol.SIGN.getSymbol());
 											
 					} else if (code==8 | code==46) {
-						displayText = calculator.Operate("CE");
+						displayText = calculator.Operate(Symbol.CLEAN_ELEMENT.getSymbol());
 					} else if (code==27 || code==67) {
-						displayText = calculator.Operate("C");
+						displayText = calculator.Operate(Symbol.CLEAN.getSymbol());
 					} else if (code==13 || code==61) {
-						displayText = calculator.Operate("=");
+						displayText = calculator.Operate(Symbol.EQUAL.getSymbol());
 					} else if (code==106 || code==170 || code==88) {
-						displayText = calculator.Operate("*");
+						displayText = calculator.Operate(Symbol.MULT.getSymbol());
 					} else if (code==107) {
-						displayText = calculator.Operate("+");
+						displayText = calculator.Operate(Symbol.PLUS.getSymbol());
 					} else if (code==171) {
-						displayText = (event.isShiftKeyDown())?calculator.Operate("*"):calculator.Operate("+");
+						displayText = (event.isShiftKeyDown())?calculator.Operate(Symbol.MULT.getSymbol()):calculator.Operate(Symbol.PLUS.getSymbol());
 					} else if (code==109 || code==173) {
-						displayText = calculator.Operate("-");
+						displayText = calculator.Operate(Symbol.MINUS.getSymbol());
 					} else if (code==111 || code==47) {
-						displayText = calculator.Operate("/");
+						displayText = calculator.Operate(Symbol.DIV.getSymbol());
 					} else if (code==80 || code==37) {
-						displayText = calculator.Operate("%");
+						displayText = calculator.Operate(Symbol.PORC.getSymbol());
 					}
 					
 					if (!displayText.equals("NaN"))calculatorDisplay.setText(displayText);
