@@ -8,6 +8,8 @@ import com.google.gwt.cell.client.DateCell;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.editor.client.Editor.Path;
+import com.google.gwt.event.dom.client.KeyDownEvent;
+import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
@@ -34,11 +36,11 @@ import com.sencha.gxt.widget.core.client.container.VerticalLayoutContainer;
 import com.sencha.gxt.widget.core.client.container.VerticalLayoutContainer.VerticalLayoutData;
 import com.sencha.gxt.widget.core.client.event.SelectEvent;
 import com.sencha.gxt.widget.core.client.event.SelectEvent.SelectHandler;
-import com.sencha.gxt.widget.core.client.form.FloatField;
+import com.sencha.gxt.widget.core.client.form.TextField;
 import com.sencha.gxt.widget.core.client.grid.ColumnConfig;
 import com.sencha.gxt.widget.core.client.grid.ColumnModel;
 import com.sencha.gxt.widget.core.client.grid.Grid;
-import com.sencha.gxt.widget.core.client.info.Info;
+//import com.sencha.gxt.widget.core.client.info.Info;
 import com.sencha.gxt.widget.core.client.menu.Item;
 import com.sencha.gxt.widget.core.client.menu.Menu;
 import com.sencha.gxt.widget.core.client.menu.MenuBar;
@@ -55,7 +57,7 @@ public class SimpleCalculator implements IsWidget, EntryPoint {
 
 	private FramedPanel widget;
 	private Calculator calculator;
-	private FloatField calculatorDisplay;
+	private TextField calculatorDisplay;
 
 
 	@Override
@@ -71,16 +73,66 @@ public class SimpleCalculator implements IsWidget, EntryPoint {
 			tableDisplay.setCellPadding(2);
 			tableDisplay.setBorderWidth(0);
 
-			calculatorDisplay = new FloatField();
+			KeyDownHandler keyHandler = new KeyDownHandler() {
+				@Override
+				public void onKeyDown(KeyDownEvent event) {
+					int code = event.getNativeKeyCode();
+					String displayText = "NaN";
+					if (code>=48 && code<=57) {
+						if (!event.isShiftKeyDown()) {
+							displayText = calculator.AddSymbol(String.valueOf(code-48));
+						} else if (code==48) {
+							displayText = calculator.Operate("=");
+						} else if (code==53) {
+							displayText = calculator.Operate("%");
+						} else if (code==55) {
+							displayText = calculator.Operate("/");
+						}
+					} else if (code>=96 && code<=105) {
+						displayText = calculator.AddSymbol(String.valueOf(code-96));
+					} else if (code==110 || code==188 || code==190) {
+						displayText = calculator.AddSymbol(".");
+					} else if (code==78) {
+						displayText = calculator.AddSymbol(Symbol.SIGN.getSymbol());
+											
+					} else if (code==8 | code==46) {
+						displayText = calculator.Operate("CE");
+					} else if (code==27 || code==67) {
+						displayText = calculator.Operate("C");
+					} else if (code==13 || code==61) {
+						displayText = calculator.Operate("=");
+					} else if (code==106 || code==170 || code==88) {
+						displayText = calculator.Operate("*");
+					} else if (code==107) {
+						displayText = calculator.Operate("+");
+					} else if (code==171) {
+						displayText = (event.isShiftKeyDown())?calculator.Operate("*"):calculator.Operate("+");
+					} else if (code==109 || code==173) {
+						displayText = calculator.Operate("-");
+					} else if (code==111 || code==47) {
+						displayText = calculator.Operate("/");
+					} else if (code==80 || code==37) {
+						displayText = calculator.Operate("%");
+					}
+					
+					if (!displayText.equals("NaN"))calculatorDisplay.setText(displayText);
+
+//					// Debug
+//					Info.display("keyDown", 
+//							String.valueOf(event.getNativeKeyCode())+ ":" +
+//							String.valueOf(event.hashCode())+ ":" +
+//							String.valueOf(event.isShiftKeyDown())
+//							);				
+				}
+			}; // handlerNumber
+
+			calculatorDisplay = new TextField();
 			calculatorDisplay.setText("0");
 			calculatorDisplay.setReadOnly(true);
 			calculatorDisplay.setAllowTextSelection(false);
-			calculatorDisplay.setEditable(false);
-			calculatorDisplay.setBaseChars("0123456789.-");
-			//calculatorDisplay.setLayoutData(layoutData);
-			calculatorDisplay.setDirection(Direction.RTL);
 			calculatorDisplay.setSize("178px", "100%");
-
+			calculatorDisplay.addKeyDownHandler(keyHandler);
+			
 			tableDisplay.setWidget(0, 0, calculatorDisplay);
 
 			// FlexTable for Buttons
@@ -97,11 +149,12 @@ public class SimpleCalculator implements IsWidget, EntryPoint {
 					String displayText = calculator.AddSymbol(txt);
 
 					calculatorDisplay.setText(displayText);
+					calculatorDisplay.focus();
 
-					// Debug info
-					Info.display("Digit", "Display: " + displayText + " op1: " + calculator.getOp1().getValue()
-							+ " op2: " + calculator.getOp2().getValue() + " operation: " + calculator.getOperation()
-							+ " finalEdition: " + calculator.isFinalOperator() + " state: " + calculator.getState());
+//					// Debug info
+//					Info.display("Digit", "Display: " + displayText + " op1: " + calculator.getOp1().getValue()
+//							+ " op2: " + calculator.getOp2().getValue() + " operation: " + calculator.getOperation()
+//							+ " finalEdition: " + calculator.isFinalOperator() + " state: " + calculator.getState());
 				}
 			}; // handlerNumber
 
@@ -113,11 +166,12 @@ public class SimpleCalculator implements IsWidget, EntryPoint {
 					String displayText = calculator.Operate(txt);
 
 					calculatorDisplay.setText(displayText);
+					calculatorDisplay.focus();
 
-					// Debug info
-					Info.display("Operator", "Display: " + displayText + " op1: " + calculator.getOp1().getValue()
-							+ " op2: " + calculator.getOp2().getValue() + " operation: " + calculator.getOperation()
-							+ " finalEdition: " + calculator.isFinalOperator() + " state: " + calculator.getState());
+//					// Debug info
+//					Info.display("Operator", "Display: " + displayText + " op1: " + calculator.getOp1().getValue()
+//							+ " op2: " + calculator.getOp2().getValue() + " operation: " + calculator.getOperation()
+//							+ " finalEdition: " + calculator.isFinalOperator() + " state: " + calculator.getState());
 				}
 			}; // handlerOperator
 
@@ -162,6 +216,7 @@ public class SimpleCalculator implements IsWidget, EntryPoint {
 							mb.show();
 						}
 					}
+					calculatorDisplay.focus();
 				}
 			}; // handlerSpecialOperator
 
@@ -198,14 +253,16 @@ public class SimpleCalculator implements IsWidget, EntryPoint {
 		} // if
 
 		return widget;
-	}
+	}  // asWidget
 
 	@Override
 	public void onModuleLoad() {
 		// FramedPanel --> VerticalLayoutContainer --> FlexTable
 		RootPanel.get().add(asWidget());
+		calculatorDisplay.focus();
 	}
 
+	
 	private void convertToBinary(String decimalNumber) {
 		int pos = decimalNumber.indexOf(".");
 
