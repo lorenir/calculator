@@ -1,0 +1,2 @@
+serviceClass: com.principal.calculator.client.ConversionService
+path: 9A36FE7D0417EF33CF6BAC22502426AC.gwt.rpc

@@ -1,0 +1,3 @@
+# Module simplecalculator
+# RPC service class, partial path of RPC policy file
+com.principal.calculator.client.ConversionService, 9A36FE7D0417EF33CF6BAC22502426AC.gwt.rpc
